@@ -1,0 +1,4 @@
+method,estimate,se,ci_low,ci_high,p_value
+Naive difference,0.2928,0.0399,0.2146,0.3709,0
+OLS + controls,0.2207,0.0488,0.1251,0.3163,0
+Inverse propensity weighting,0.1717,0.055,0.0673,0.2708,0.0018
