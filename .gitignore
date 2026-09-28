@@ -1,0 +1,9 @@
+# rebuildable / local-only
+data/processed/*.duckdb
+data/processed/*.duckdb.wal
+__pycache__/
+*.pyc
+.Rhistory
+.RData
+.Rproj.user/
+.DS_Store
