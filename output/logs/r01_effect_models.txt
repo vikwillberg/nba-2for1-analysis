@@ -1,0 +1,48 @@
+Windows: 9,581 | went 2-for-1: 58.0%
+
+== (1) Naive difference in means ==
+
+t test of coefficients:
+
+            Estimate Std. Error t value  Pr(>|t|)    
+(Intercept) 0.346421   0.027715 12.4995 < 2.2e-16 ***
+went_2for1  0.292772   0.039860  7.3449 2.227e-13 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+
+== (2) OLS with controls, SEs clustered by game ==
+
+t test of coefficients:
+
+                         Estimate  Std. Error t value Pr(>|t|)    
+(Intercept)           -2.30658893  0.77637487 -2.9710 0.002976 ** 
+went_2for1             0.22070373  0.04878463  4.5240 6.14e-06 ***
+start_bucket33-36      0.00099417  0.06251256  0.0159 0.987312    
+start_bucket36-39      0.00303189  0.06450909  0.0470 0.962515    
+start_bucket39-42      0.18967099  0.07021201  2.7014 0.006917 ** 
+start_bucket42-45      0.07551451  0.07766679  0.9723 0.330932    
+start_typeMADE_BASKET -0.05509156  0.04527431 -1.2168 0.223695    
+start_typeLIVE_TOV     0.06632730  0.08407548  0.7889 0.430189    
+start_typeDEAD_BALL   -0.01055915  0.09291242 -0.1136 0.909521    
+period2                0.02361385  0.05003072  0.4720 0.636947    
+period3                0.04671175  0.05041089  0.9266 0.354147    
+season2023-24          0.04441287  0.05038836  0.8814 0.378117    
+season2024-25          0.03042163  0.05082407  0.5986 0.549476    
+team_off_rtg           0.00958395  0.00443084  2.1630 0.030565 *  
+opp_def_rtg            0.01280268  0.00480828  2.6626 0.007766 ** 
+margin_c              -0.00025465  0.00246211 -0.1034 0.917626    
+is_home                0.02627224  0.04147267  0.6335 0.526433    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+
+== (3) Propensity model: share of windows inside [0.05, 0.95] ==
+89.1%
+IPW ATE = 0.172  (95% cluster-bootstrap CI 0.067 to 0.271, B = 500)
+
+== Summary ==
+                        method estimate     se ci_low ci_high p_value
+1             Naive difference   0.2928 0.0399 0.2146  0.3709  0.0000
+2               OLS + controls   0.2207 0.0488 0.1251  0.3163  0.0000
+3 Inverse propensity weighting   0.1717 0.0550 0.0673  0.2708  0.0018

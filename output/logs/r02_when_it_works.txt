@@ -1,0 +1,20 @@
+== (a) Adjusted 2-for-1 effect by when possession was gained ==
+  start_bucket windows go_rate effect    se p_value ci_low ci_high
+1        30-33    1575   0.135 -0.090 0.158   0.571 -0.400   0.220
+2        33-36    1970   0.378  0.305 0.093   0.001  0.123   0.487
+3        36-39    2004   0.578  0.293 0.090   0.001  0.116   0.470
+4        39-42    2089   0.784  0.188 0.104   0.071 -0.016   0.392
+5        42-45    1943   0.929  0.079 0.172   0.646 -0.258   0.415
+
+== (b) Shooting 'too early' (first shot at 0:34+) vs 0:28-0:34, ball gained 0:37+ ==
+               shot_window attempts   net_pts opp_counter_rate
+1 On time (0:28-0:34 left)     2914 0.7213452        0.1908030
+2   Too early (0:34+ left)     1321 0.5238456        0.5223316
+
+Adjusted difference (too early minus on time):
+                           outcome    est    se     p
+1                       Net points -0.201 0.076 0.008
+2 Opponent gets 2 real possessions  0.329 0.016 0.000
+3     Team gets 2 real possessions  0.098 0.007 0.000
+
+Figures written to output/figures/
