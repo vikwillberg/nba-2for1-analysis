@@ -1,0 +1,827 @@
+<title>The 2-for-1 Ledger</title>
+<meta name="description" content="Independent NBA analysis: what the end-of-quarter 2-for-1 is worth, when it stops working, and which teams leave points on the table.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #f2f3f1;
+  --surface: #fcfcfb;
+  --surface-2: #eaece8;
+  --ink: #101317;
+  --ink-2: #4b5058;
+  --muted: #7d828a;
+  --rule: #d9dcd7;
+  --grid: #e3e5e1;
+  --axis: #c3c2b7;
+  --blue: #2a78d6;
+  --blue-wash: rgba(42, 120, 214, 0.10);
+  --orange: #eb6834;
+  --orange-wash: rgba(235, 104, 52, 0.13);
+  --opp: #a3a8ae;
+  --chip-bg: #e2ecf9;
+  --chip-ink: #174a8a;
+  --chip-warn-bg: #fbe6dc;
+  --chip-warn-ink: #8a3412;
+  --c-kw: #1c5cab;
+  --c-str: #9a3f16;
+  --c-com: #7d828a;
+  --c-num: #6c42a8;
+  --c-fn: #0b6b52;
+  --shadow: 0 1px 2px rgba(16, 19, 23, 0.06), 0 8px 24px rgba(16, 19, 23, 0.05);
+  --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", system-ui, sans-serif;
+  --body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0e1012;
+    --surface: #17191c;
+    --surface-2: #1f2226;
+    --ink: #f2f3f4;
+    --ink-2: #c3c6cb;
+    --muted: #8b9097;
+    --rule: #2d3136;
+    --grid: #25282c;
+    --axis: #3b3f45;
+    --blue: #3987e5;
+    --blue-wash: rgba(57, 135, 229, 0.16);
+    --orange: #d95926;
+    --orange-wash: rgba(217, 89, 38, 0.18);
+    --opp: #5f656d;
+    --chip-bg: #16304f;
+    --chip-ink: #b7d3f6;
+    --chip-warn-bg: #3d2114;
+    --chip-warn-ink: #f4b99f;
+    --c-kw: #86b6ef;
+    --c-str: #f0a07a;
+    --c-com: #8b9097;
+    --c-num: #b9a8f0;
+    --c-fn: #5fd1a8;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.25);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0e1012;
+  --surface: #17191c;
+  --surface-2: #1f2226;
+  --ink: #f2f3f4;
+  --ink-2: #c3c6cb;
+  --muted: #8b9097;
+  --rule: #2d3136;
+  --grid: #25282c;
+  --axis: #3b3f45;
+  --blue: #3987e5;
+  --blue-wash: rgba(57, 135, 229, 0.16);
+  --orange: #d95926;
+  --orange-wash: rgba(217, 89, 38, 0.18);
+  --opp: #5f656d;
+  --chip-bg: #16304f;
+  --chip-ink: #b7d3f6;
+  --chip-warn-bg: #3d2114;
+  --chip-warn-ink: #f4b99f;
+  --c-kw: #86b6ef;
+  --c-str: #f0a07a;
+  --c-com: #8b9097;
+  --c-num: #b9a8f0;
+  --c-fn: #5fd1a8;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 880px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 72px; }
+.prose { max-width: 68ch; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; line-height: 1.05; }
+h2 { font-size: 34px; font-weight: 600; letter-spacing: 0.005em; }
+h3 { font-size: 22px; font-weight: 600; }
+p { margin: 0; }
+a { color: var(--blue); text-underline-offset: 2px; }
+strong { font-weight: 600; }
+.eyebrow {
+  font-family: var(--body); font-size: 13px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.09em; color: var(--ink-2);
+}
+.muted { color: var(--muted); }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+section { display: flex; flex-direction: column; gap: 20px; padding-block: 44px 8px; border-top: 1px solid var(--rule); }
+section:first-of-type { border-top: 0; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+/* ---------- header ---------- */
+header { display: flex; flex-direction: column; gap: 18px; padding-bottom: 28px; }
+header h1 {
+  font-size: clamp(48px, 9vw, 88px); font-weight: 700; text-transform: uppercase;
+  letter-spacing: -0.01em; line-height: 0.92;
+}
+header h1 .num { color: var(--blue); }
+.dek { font-size: 20px; line-height: 1.5; color: var(--ink-2); max-width: 62ch; }
+.byline { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14.5px; color: var(--ink-2); align-items: center; }
+.data-note {
+  display: flex; gap: 12px; align-items: flex-start; font-size: 14.5px; line-height: 1.5;
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; max-width: 72ch;
+}
+.data-note b { font-weight: 600; }
+.tag {
+  flex: none; font-size: 11.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  background: var(--chip-warn-bg); color: var(--chip-warn-ink); border-radius: 4px; padding: 2px 7px; margin-top: 1px;
+}
+
+/* ---------- clock scrubber ---------- */
+.scrubber {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; box-shadow: var(--shadow);
+  padding: 22px 22px 18px; display: flex; flex-direction: column; gap: 16px;
+}
+.scrub-top { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: flex-end; justify-content: space-between; }
+.clock-read { display: flex; flex-direction: column; gap: 2px; }
+.clock-digits {
+  font-family: var(--display); font-weight: 700; font-size: 60px; line-height: 0.9;
+  font-variant-numeric: tabular-nums; letter-spacing: 0.01em;
+}
+.clock-label { font-size: 13px; color: var(--ink-2); }
+.verdict { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; max-width: 44ch; }
+.chip {
+  font-family: var(--display); font-weight: 600; font-size: 19px; letter-spacing: 0.03em; text-transform: uppercase;
+  border-radius: 6px; padding: 3px 10px 2px; background: var(--chip-bg); color: var(--chip-ink);
+}
+.chip.warn { background: var(--chip-warn-bg); color: var(--chip-warn-ink); }
+.verdict p { font-size: 15px; line-height: 1.45; color: var(--ink-2); }
+.range-row { display: flex; align-items: center; gap: 12px; }
+.range-row span { font-family: var(--display); font-size: 16px; color: var(--muted); font-variant-numeric: tabular-nums; }
+input[type="range"] { flex: 1; accent-color: var(--blue); height: 28px; min-width: 0; }
+.timeline { width: 100%; }
+.timeline svg { display: block; width: 100%; height: auto; }
+.scrub-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px 20px; border-top: 1px solid var(--rule); padding-top: 14px; }
+.scrub-stats div { display: flex; flex-direction: column; gap: 1px; }
+.scrub-stats b { font-family: var(--display); font-size: 26px; font-weight: 600; line-height: 1.1; }
+.scrub-stats span { font-size: 13px; color: var(--ink-2); }
+
+/* ---------- findings ---------- */
+.findings { display: flex; flex-direction: column; }
+.finding {
+  display: grid; grid-template-columns: 132px 1fr; gap: 18px; align-items: baseline;
+  padding-block: 14px; border-top: 1px solid var(--rule);
+}
+.finding:first-child { border-top: 0; }
+.finding .big { font-family: var(--display); font-weight: 700; font-size: 46px; line-height: 1; }
+.finding p { font-size: 16.5px; }
+
+/* ---------- pipeline ---------- */
+.pipeline { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; counter-reset: step; }
+.pipeline li { counter-increment: step; display: flex; flex-direction: column; gap: 4px; padding-top: 10px; border-top: 2px solid var(--ink); font-size: 14.5px; line-height: 1.45; color: var(--ink-2); }
+.pipeline li b { font-family: var(--display); font-size: 19px; font-weight: 600; color: var(--ink); }
+.pipeline li b::before { content: counter(step) " · "; color: var(--muted); }
+.pipeline .lang { font-size: 11.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+/* ---------- code ---------- */
+.code { display: flex; flex-direction: column; border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.code-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 12px; border-bottom: 1px solid var(--rule); font-size: 12.5px; color: var(--ink-2); font-family: var(--mono); }
+.code-head .lang { font-family: var(--body); font-weight: 600; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+pre { margin: 0; overflow-x: auto; padding: 14px 16px; font-family: var(--mono); font-size: 13px; line-height: 1.55; tab-size: 2; }
+pre code { font-family: inherit; background: none; }
+pre.console { background: var(--surface-2); color: var(--ink); }
+.hljs-keyword, .hljs-built_in, .hljs-literal { color: var(--c-kw); }
+.hljs-string { color: var(--c-str); }
+.hljs-comment { color: var(--c-com); font-style: italic; }
+.hljs-number { color: var(--c-num); }
+.hljs-title, .hljs-title.function_, .hljs-function { color: var(--c-fn); }
+.hljs-operator, .hljs-punctuation { color: var(--ink-2); }
+
+/* ---------- result grid ---------- */
+.grid-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { padding: 8px 12px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--grid); font-variant-numeric: tabular-nums; }
+th { font-weight: 600; color: var(--ink-2); font-size: 12.5px; background: var(--surface-2); }
+th:first-child, td:first-child { text-align: left; }
+tr:last-child td { border-bottom: 0; }
+table.mono td, table.mono th { font-family: var(--mono); font-size: 12.5px; }
+
+/* ---------- figures ---------- */
+figure { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.fig { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 18px 18px 12px; }
+.fig-title { font-family: var(--display); font-size: 21px; font-weight: 600; line-height: 1.2; }
+.fig-sub { font-size: 14px; color: var(--ink-2); margin-top: 2px; }
+.chart { width: 100%; margin-top: 10px; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+figcaption { font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--ink-2); margin-top: 10px; }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.key-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--blue); }
+.key-ring { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--blue); background: var(--surface); }
+.key-bar { width: 12px; height: 10px; border-radius: 2px; }
+.key-line { width: 16px; height: 0; border-top: 2px solid var(--ink); }
+.key-band { width: 16px; height: 10px; background: var(--blue-wash); border-radius: 2px; }
+
+svg text { font-family: var(--body); fill: var(--ink-2); font-size: 12.5px; }
+svg .t-strong { fill: var(--ink); font-weight: 600; }
+svg .t-muted { fill: var(--muted); }
+svg .halo { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+svg .t-display { font-family: var(--display); font-size: 15px; font-weight: 600; fill: var(--ink); }
+svg .grid { stroke: var(--grid); stroke-width: 1; }
+svg .axis { stroke: var(--axis); stroke-width: 1; }
+svg .zero { stroke: var(--axis); stroke-width: 1.5; }
+svg .ci { stroke: var(--blue); stroke-width: 2; stroke-linecap: round; }
+svg .dot { fill: var(--blue); stroke: var(--surface); stroke-width: 2; }
+svg .dot.hollow { fill: var(--surface); stroke: var(--blue); stroke-width: 2; }
+svg .truth { stroke: var(--ink); stroke-width: 2; stroke-linecap: round; }
+svg .band { fill: var(--blue-wash); }
+svg .f-blue { fill: var(--blue); }
+svg .f-orange { fill: var(--orange); }
+svg .f-opp { fill: var(--opp); }
+svg .f-orange-wash { fill: var(--orange-wash); }
+svg .ball { fill: var(--orange); stroke: var(--surface); stroke-width: 2; }
+svg .row:hover .hl { opacity: 1; }
+svg .hl { fill: var(--blue-wash); opacity: 0; transition: opacity 0.12s; }
+
+#tip {
+  position: fixed; z-index: 10; pointer-events: none; max-width: 260px;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--rule); border-radius: 8px;
+  box-shadow: var(--shadow); padding: 9px 11px; font-size: 13px; line-height: 1.45;
+}
+#tip b { font-family: var(--display); font-size: 16px; font-weight: 600; display: block; margin-bottom: 2px; }
+#tip .row { display: flex; justify-content: space-between; gap: 14px; }
+#tip .row span:last-child { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+/* ---------- rules table ---------- */
+.rules td, .rules th { white-space: normal; text-align: left; vertical-align: top; font-size: 15px; }
+.rules td:first-child { font-family: var(--display); font-size: 20px; font-weight: 600; white-space: nowrap; }
+.rules td:nth-child(2) { font-weight: 600; }
+
+details { border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+details summary { cursor: pointer; padding: 10px 14px; font-size: 14px; font-weight: 600; color: var(--ink-2); }
+details[open] summary { border-bottom: 1px solid var(--rule); }
+details .grid-wrap { border: 0; border-radius: 0; }
+
+ul.plain { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+.two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+footer { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--rule); font-size: 13.5px; color: var(--muted); }
+
+@media (max-width: 560px) {
+  body { font-size: 16px; }
+  .finding { grid-template-columns: 1fr; gap: 4px; }
+  .finding .big { font-size: 40px; }
+  .clock-digits { font-size: 52px; }
+  .scrubber { padding: 16px 14px 14px; }
+  .fig { padding: 14px 12px 10px; }
+  h2 { font-size: 30px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Independent analysis · NBA end-of-quarter strategy</div>
+  <h1>The <span class="num">2-for-1</span> Ledger</h1>
+  <p class="dek">With about 40 seconds left in a quarter, teams shoot early so they can get the ball back for the last shot. I rebuilt 9,581 of those moments from play-by-play to measure what the move is worth, when it stops working, and which teams leave points on the table.</p>
+  <div class="byline"><span><strong>Viktor Bergs</strong></span><span>SQL (DuckDB) · R · Python</span><span>3 seasons · 3,690 games</span></div>
+  <div class="data-note"><span class="tag">Simulated</span><span>The play-by-play is <b>simulated</b> in the NBA Stats PlayByPlayV3 layout and teams are anonymized (T01–T30). Because the league is simulated, the true effect is known, so the page also checks whether the methods recover it. The same SQL and R run on a real nba_api pull after light cleaning.</span></div>
+</header>
+
+<div class="scrubber" id="scrubber">
+  <div class="scrub-top">
+    <div class="clock-read">
+      <span class="clock-label">Ball gained with</span>
+      <span class="clock-digits" id="clockDigits">0:40.0</span>
+    </div>
+    <div class="verdict">
+      <span class="chip" id="verdictChip">Go 2-for-1</span>
+      <p id="verdictText"></p>
+    </div>
+  </div>
+  <div class="range-row">
+    <span>0:30</span>
+    <input type="range" id="clockRange" min="30" max="45" step="0.5" value="40" aria-label="Seconds left when the team gains possession">
+    <span>0:45</span>
+  </div>
+  <div class="timeline" id="timeline"></div>
+  <div class="scrub-stats">
+    <div><b id="stEffect">+0.19</b><span>net points from going (adjusted)</span></div>
+    <div><b id="stCI">−0.02 to +0.39</b><span>95% confidence interval</span></div>
+    <div><b id="stGo">78%</b><span>of teams go 2-for-1 here</span></div>
+    <div><b id="stUse">12.0 s</b><span>you can use before 0:28</span></div>
+  </div>
+</div>
+
+<section>
+  <div class="eyebrow">What I found</div>
+  <div class="findings">
+    <div class="finding"><div class="big">+0.2</div><p><strong>Net points per opportunity</strong> from going 2-for-1, after adjusting for how and when the ball was gained (OLS +0.22, inverse propensity weighting +0.17). The true value in the simulation is +0.215.</p></div>
+    <div class="finding"><div class="big">36%</div><p><strong>How much a raw comparison overstates it.</strong> Teams that go 2-for-1 more often start from a steal and with more time on the clock, and both of those help on their own.</p></div>
+    <div class="finding"><div class="big">0:33</div><p><strong>The threshold.</strong> Gain the ball with 0:33 or more and the move pays about +0.26. Gain it later and you must shoot within 3 to 5 seconds; that rushed shot eats most of the gain.</p></div>
+    <div class="finding"><div class="big">−0.20</div><p><strong>The cost of shooting too early.</strong> A first shot with 0:34+ left raises the opponent's chance of getting two possessions of its own from 19% to 52%.</p></div>
+    <div class="finding"><div class="big">10.5</div><p><strong>Points per season the median team leaves on the table</strong> through passed 2-for-1s and early shots. The best-to-worst gap is 7.5 points, about a quarter of a win, for a decision that costs nothing to fix.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="stack prose">
+    <div class="eyebrow">Data and pipeline</div>
+    <h2>Rebuilding possessions from raw events</h2>
+    <p>Play-by-play logs events, not possessions. The analysis needs to know exactly when each team gained the ball, how it gained it, and when it first shot, so the SQL layer reconstructs possessions from the event stream before anything is modeled.</p>
+  </div>
+  <ol class="pipeline">
+    <li><span class="lang">Python</span><b>Simulate</b>127,163 events from the last 75 seconds of Q1–Q3 in 3,690 games, in the PlayByPlayV3 layout.</li>
+    <li><span class="lang">SQL</span><b>Stage</b>Parse the ISO clock (PT00M34.50S → 34.5) and tag which team has the ball on every event.</li>
+    <li><span class="lang">SQL</span><b>Possessions</b>Window functions turn events into 59,141 possessions, each dated to the event that handed the ball over.</li>
+    <li><span class="lang">SQL</span><b>Windows</b>Keep the first possession gained at 0:30–0:45 in each quarter: 9,581 opportunities.</li>
+    <li><span class="lang">R</span><b>Model</b>Estimate the effect three ways, split it by clock and shot timing, and grade every team.</li>
+  </ol>
+  <div class="code">
+    <div class="code-head"><span>sql/02_possessions.sql (excerpt)</span><span class="lang">DuckDB SQL</span></div>
+    <pre><code class="language-sql">CREATE OR REPLACE TABLE possessions AS
+WITH ev AS (
+    SELECT *,
+           LAG(ball_team_id) OVER w AS prev_ball_team
+    FROM pbp
+    WHERE action_type &lt;&gt; &#x27;period&#x27;
+    WINDOW w AS (PARTITION BY game_id, period ORDER BY action_number)
+),
+numbered AS (
+    SELECT *,
+           SUM(CASE WHEN prev_ball_team IS NULL
+                      OR ball_team_id &lt;&gt; prev_ball_team THEN 1 ELSE 0 END)
+               OVER (PARTITION BY game_id, period ORDER BY action_number
+                     ROWS UNBOUNDED PRECEDING)                         AS poss_seq
+    FROM ev
+),
+-- ... aggregate first / last event of each possession (agg CTE) ...
+
+    -- when did this team gain the ball?
+    CASE WHEN a.first_type = &#x27;Rebound&#x27; AND a.first_sub = &#x27;Defensive&#x27;
+         THEN a.first_sec
+         ELSE LAG(a.last_sec) OVER wp END                               AS start_sec,
+    -- how did it gain the ball?
+    CASE
+        WHEN a.first_type = &#x27;Rebound&#x27; AND a.first_sub = &#x27;Defensive&#x27;      THEN &#x27;DREB&#x27;
+        WHEN LAG(a.last_type) OVER wp = &#x27;Made Shot&#x27;
+          OR (LAG(a.last_type) OVER wp = &#x27;Free Throw&#x27;
+              AND LAG(a.last_result) OVER wp = &#x27;Made&#x27;)                  THEN &#x27;MADE_BASKET&#x27;
+        WHEN LAG(a.last_type) OVER wp = &#x27;Turnover&#x27;
+          AND LAG(a.last_sub) OVER wp IN (&#x27;Bad Pass&#x27;, &#x27;Lost Ball&#x27;)       THEN &#x27;LIVE_TOV&#x27;
+        WHEN LAG(a.last_type) OVER wp = &#x27;Turnover&#x27;                       THEN &#x27;DEAD_BALL&#x27;
+        ELSE &#x27;UNKNOWN&#x27;
+    END                                                                 AS start_type,</code></pre>
+  </div>
+  <p class="prose">A possession changes whenever the ball-owning team changes between consecutive events, so offensive rebounds extend a possession. <code>03_windows.sql</code> then flags the treatment: the team <strong>went 2-for-1</strong> if its first shot decision (a field-goal attempt, turnover, or drawn shooting foul) came with 0:28 or more left. The outcome is team points minus opponent points from that moment to the buzzer.</p>
+  <div class="stack">
+    <div class="grid-wrap">
+      <table class="mono"><thead><tr><th>decision</th><th>windows</th><th>team_pts</th><th>opp_pts</th><th>net_pts</th><th>got_2nd_poss</th><th>opp_got_2nd_poss</th><th>share_live_tov</th><th>avg_start_sec</th></tr></thead><tbody><tr><td>Went 2-for-1</td><td>5557</td><td>1.997</td><td>1.358</td><td>0.639</td><td>0.904</td><td>0.262</td><td>0.111</td><td>39.7</td></tr><tr><td>Did not</td><td>4024</td><td>1.333</td><td>0.987</td><td>0.346</td><td>0.213</td><td>0.009</td><td>0.032</td><td>35.0</td></tr></tbody></table>
+    </div>
+    <p class="muted" style="font-size:13.5px">Output of <code>04_descriptives.sql</code>. A “real” possession starts with at least 3 seconds left, so heaves don't count.</p>
+  </div>
+  <p class="prose">The raw gap is +0.29 net points. But the two groups differ before anyone shoots: teams that went had the ball 4.7 seconds earlier on average and were 3.5 times as likely to start from a live-ball turnover. That is the confounding the models have to remove.</p>
+</section>
+
+<section>
+  <div class="stack prose">
+    <div class="eyebrow">Result 1</div>
+    <h2>A 2-for-1 is worth about a fifth of a point</h2>
+    <p>Three estimators, from naive to causal. OLS adds controls for the clock, how the ball was gained, period, season, team offensive rating, opponent defensive rating, score margin and home court, with standard errors clustered by game. Inverse propensity weighting models each team's chance of going 2-for-1 and reweights so the two groups match on those same factors.</p>
+  </div>
+  <figure class="fig">
+    <div class="fig-title">Adjusting for the situation shrinks the estimate toward the truth</div>
+    <div class="fig-sub">Change in end-of-quarter net points from going 2-for-1, with 95% confidence interval</div>
+    <div class="chart" id="chartEst"></div>
+    <div class="legend"><span><i class="key-dot"></i>Estimate and 95% CI</span><span><i class="key-line"></i>True effect in the simulation</span><span><i class="key-band"></i>Its 95% range</span></div>
+  </figure>
+  <div class="stack">
+    <div class="code">
+      <div class="code-head"><span>R/01_effect_models.R (excerpt)</span><span class="lang">R</span></div>
+      <pre><code class="language-r">f_ols &lt;- net_pts ~ went_2for1 + start_bucket + start_type + period + season +
+                   team_off_rtg + opp_def_rtg + margin_c + is_home
+m_ols &lt;- lm(f_ols, data = w)
+ct_ols &lt;- coeftest(m_ols, vcov = vcovCL(m_ols, cluster = ~game_id))
+
+f_ps &lt;- went_2for1 ~ ns(start_sec, df = 4) + start_type + period + season +
+                     team_off_rtg + opp_def_rtg + margin_c + is_home
+
+ipw_ate &lt;- function(d) {
+  ps &lt;- predict(glm(f_ps, family = binomial, data = d), type = &quot;response&quot;)
+  ps &lt;- pmin(pmax(ps, 0.05), 0.95)                     # trim for overlap
+  p1 &lt;- mean(d$went_2for1)
+  sw &lt;- ifelse(d$went_2for1 == 1, p1 / ps, (1 - p1) / (1 - ps))  # stabilized
+  weighted.mean(d$net_pts[d$went_2for1 == 1], sw[d$went_2for1 == 1]) -
+    weighted.mean(d$net_pts[d$went_2for1 == 0], sw[d$went_2for1 == 0])
+}
+
+boot    &lt;- replicate(500, {
+  g &lt;- sample(games, length(games), replace = TRUE)
+  ipw_ate(w[unlist(idx[g], use.names = FALSE), ])
+})</code></pre>
+    </div>
+    <div class="code">
+      <div class="code-head"><span>console</span><span class="lang">R output</span></div>
+      <pre class="console"><code>IPW ATE = 0.172  (95% cluster-bootstrap CI 0.067 to 0.271, B = 500)
+
+== Summary ==
+                        method estimate     se ci_low ci_high p_value
+1             Naive difference   0.2928 0.0399 0.2146  0.3709  0.0000
+2               OLS + controls   0.2207 0.0488 0.1251  0.3163  0.0000
+3 Inverse propensity weighting   0.1717 0.0550 0.0673  0.2708  0.0018</code></pre>
+    </div>
+  </div>
+  <p class="prose"><strong>Checking the answer.</strong> Because the league is simulated, I replayed 6,000 sampled windows twenty times each with the decision forced both ways and everything else fixed. The true effect is <strong>+0.215</strong> (SE 0.008). OLS lands within 0.01 of it and the IPW interval covers it. The naive estimate overstates it by 36%, and its interval only just reaches the true value. On real data there is no answer key, which is why the adjusted methods matter.</p>
+</section>
+
+<section>
+  <div class="stack prose">
+    <div class="eyebrow">Result 2</div>
+    <h2>It only pays if you gain the ball with 0:33 or more</h2>
+    <p>Splitting the windows by when the team gained the ball, and fitting the adjusted model inside each 3-second bucket, shows where the value comes from. Below 0:33 a team has to shoot within about 3 seconds of getting the ball, and the estimate is indistinguishable from zero. From 0:33 to 0:39 the gain is about +0.3.</p>
+  </div>
+  <figure class="fig">
+    <div class="fig-title">Value of going 2-for-1 by when the ball was gained</div>
+    <div class="fig-sub">Adjusted net points, 95% CI clustered by game · hollow dot = CI includes zero</div>
+    <div class="chart" id="chartBucket"></div>
+    <div class="legend"><span><i class="key-dot"></i>Estimate, significant</span><span><i class="key-ring"></i>Estimate, CI includes zero</span><span><i class="key-line"></i>True value in the simulation</span></div>
+  </figure>
+  <p class="prose">The late buckets are the hardest to measure: from 0:42 on, 93% of teams go, so there are few teams that didn't to compare against and the interval is wide. Every bucket's interval still covers its true value. Below 0:33 the true gain is +0.08, about a third of what it is with more time.</p>
+</section>
+
+<section>
+  <div class="stack prose">
+    <div class="eyebrow">Result 3</div>
+    <h2>Shoot between 0:34 and 0:28, not before</h2>
+    <p>A team that gains the ball with 0:40 left and fires at 0:36 hands the opponent 35 seconds, which is enough for the opponent to run its own 2-for-1. Among attempts where the ball was gained with 0:37 or more, shooting at 0:34+ cost 0.20 net points after adjustment (SE 0.08).</p>
+  </div>
+  <figure class="fig">
+    <div class="fig-title">Shoot too early and the opponent gets two possessions back</div>
+    <div class="fig-sub">Share of 2-for-1 attempts where the opponent got 2 real possessions · ball gained 0:37+ · 4,235 attempts</div>
+    <div class="chart" id="chartTiming"></div>
+    <div class="legend"><span><i class="key-bar" style="background:var(--blue)"></i>On time (0:28–0:34)</span><span><i class="key-bar" style="background:var(--orange)"></i>Too early (0:34+)</span></div>
+  </figure>
+</section>
+
+<section>
+  <div class="stack prose">
+    <div class="eyebrow">Result 4</div>
+    <h2>The ledger: points left on the table</h2>
+    <p>This grades <strong>decisions, not results</strong>. Every pass (ball gained with 0:33+ and no 2-for-1) is charged the league-wide value of going, +0.258, and every too-early shot its cost, 0.201. A missed layup or a lucky heave doesn't move a team's grade. Points convert to wins at roughly 30 points of season margin per win.</p>
+  </div>
+  <figure class="fig">
+    <div class="fig-title">Points left on the table per season, by team</div>
+    <div class="fig-sub">3-season average · sorted from fewest to most · hover a row for the breakdown</div>
+    <div class="legend" style="margin-top:8px"><span><i class="key-bar" style="background:var(--blue)"></i>Passed on a 2-for-1</span><span><i class="key-bar" style="background:var(--orange)"></i>Shot too early</span></div>
+    <div class="chart" id="chartLedger"></div>
+  </figure>
+  <details>
+    <summary>Show the ledger as a table</summary>
+    <div class="grid-wrap"><table class=""><thead><tr><th>Rank</th><th>Team</th><th>Go rate (0:33+)</th><th>Too-early rate</th><th>Pts: passed</th><th>Pts: too early</th><th>Pts per season</th><th>Wins per season</th></tr></thead><tbody><tr><td>1</td><td>T28</td><td>85%</td><td>36%</td><td>3.4</td><td>4.0</td><td>7.4</td><td>0.25</td></tr><tr><td>2</td><td>T26</td><td>80%</td><td>28%</td><td>4.6</td><td>2.9</td><td>7.4</td><td>0.25</td></tr><tr><td>3</td><td>T24</td><td>81%</td><td>32%</td><td>4.5</td><td>3.4</td><td>7.9</td><td>0.26</td></tr><tr><td>4</td><td>T11</td><td>76%</td><td>31%</td><td>5.2</td><td>3.1</td><td>8.3</td><td>0.28</td></tr><tr><td>5</td><td>T04</td><td>81%</td><td>38%</td><td>4.5</td><td>4.2</td><td>8.7</td><td>0.29</td></tr><tr><td>6</td><td>T05</td><td>75%</td><td>31%</td><td>5.6</td><td>3.2</td><td>8.8</td><td>0.29</td></tr><tr><td>7</td><td>T25</td><td>72%</td><td>34%</td><td>6.0</td><td>3.0</td><td>9.0</td><td>0.30</td></tr><tr><td>8</td><td>T17</td><td>66%</td><td>28%</td><td>6.9</td><td>2.3</td><td>9.2</td><td>0.31</td></tr><tr><td>9</td><td>T20</td><td>65%</td><td>20%</td><td>7.7</td><td>1.9</td><td>9.7</td><td>0.32</td></tr><tr><td>10</td><td>T19</td><td>72%</td><td>32%</td><td>6.4</td><td>3.3</td><td>9.7</td><td>0.32</td></tr><tr><td>11</td><td>T30</td><td>71%</td><td>28%</td><td>7.1</td><td>3.0</td><td>10.0</td><td>0.33</td></tr><tr><td>12</td><td>T18</td><td>72%</td><td>34%</td><td>6.7</td><td>3.6</td><td>10.3</td><td>0.34</td></tr><tr><td>13</td><td>T22</td><td>62%</td><td>28%</td><td>8.0</td><td>2.3</td><td>10.3</td><td>0.34</td></tr><tr><td>14</td><td>T02</td><td>74%</td><td>40%</td><td>6.2</td><td>4.2</td><td>10.4</td><td>0.35</td></tr><tr><td>15</td><td>T12</td><td>72%</td><td>30%</td><td>7.1</td><td>3.2</td><td>10.4</td><td>0.35</td></tr><tr><td>16</td><td>T15</td><td>73%</td><td>34%</td><td>6.9</td><td>3.7</td><td>10.6</td><td>0.35</td></tr><tr><td>17</td><td>T14</td><td>63%</td><td>30%</td><td>8.2</td><td>2.8</td><td>10.9</td><td>0.36</td></tr><tr><td>18</td><td>T07</td><td>61%</td><td>24%</td><td>8.9</td><td>2.2</td><td>11.1</td><td>0.37</td></tr><tr><td>19</td><td>T21</td><td>64%</td><td>33%</td><td>8.3</td><td>3.0</td><td>11.3</td><td>0.38</td></tr><tr><td>20</td><td>T10</td><td>66%</td><td>35%</td><td>8.0</td><td>3.4</td><td>11.4</td><td>0.38</td></tr><tr><td>21</td><td>T23</td><td>60%</td><td>30%</td><td>8.9</td><td>2.5</td><td>11.4</td><td>0.38</td></tr><tr><td>22</td><td>T06</td><td>67%</td><td>37%</td><td>7.7</td><td>3.8</td><td>11.5</td><td>0.38</td></tr><tr><td>23</td><td>T09</td><td>59%</td><td>25%</td><td>9.5</td><td>2.2</td><td>11.7</td><td>0.39</td></tr><tr><td>24</td><td>T16</td><td>65%</td><td>35%</td><td>8.3</td><td>3.4</td><td>11.7</td><td>0.39</td></tr><tr><td>25</td><td>T08</td><td>62%</td><td>28%</td><td>9.1</td><td>2.6</td><td>11.7</td><td>0.39</td></tr><tr><td>26</td><td>T13</td><td>59%</td><td>31%</td><td>9.2</td><td>2.7</td><td>11.9</td><td>0.40</td></tr><tr><td>27</td><td>T27</td><td>56%</td><td>36%</td><td>9.9</td><td>2.9</td><td>12.8</td><td>0.43</td></tr><tr><td>28</td><td>T01</td><td>50%</td><td>29%</td><td>11.2</td><td>2.1</td><td>13.3</td><td>0.44</td></tr><tr><td>29</td><td>T29</td><td>50%</td><td>24%</td><td>12.0</td><td>2.0</td><td>14.0</td><td>0.47</td></tr><tr><td>30</td><td>T03</td><td>41%</td><td>29%</td><td>13.0</td><td>1.9</td><td>14.9</td><td>0.50</td></tr></tbody></table></div>
+  </details>
+  <p class="prose">Passing on the move is the bigger leak for almost every team; the three most conservative teams went 2-for-1 on only 41–50% of green-zone chances and leave 13–15 points a season. Too-early shots cost every team between 1.9 and 4.2 points a season, which points to an execution habit rather than a strategy choice.</p>
+</section>
+
+<section>
+  <div class="stack prose">
+    <div class="eyebrow">For a coaching staff</div>
+    <h2>The end-of-quarter card</h2>
+  </div>
+  <div class="grid-wrap">
+    <table class="rules">
+      <thead><tr><th>Ball gained</th><th>Call</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>0:45–0:37</td><td>Go. First shot between 0:34 and 0:28.</td><td>Shooting before 0:34 lets the opponent get two possessions back (52% vs. 19%) and costs 0.20 net points.</td></tr>
+        <tr><td>0:37–0:33</td><td>Go. Take the first clean look.</td><td>The largest measured gain, +0.29 to +0.31, even though the first shot comes early in the clock.</td></tr>
+        <tr><td>Under 0:33</td><td>Normal possession.</td><td>The shot would come within about 3 seconds. The estimate is −0.09 with an interval that includes zero.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="two-col">
+    <div class="stack">
+      <div class="eyebrow">Limitations</div>
+      <ul class="plain">
+        <li>The data is simulated, so the magnitudes are illustrative. The pipeline and the identification strategy are the product.</li>
+        <li>The treatment is defined by timing, so it mixes intent with execution: a quick transition layup counts as a 2-for-1.</li>
+        <li>Play-by-play doesn't show timeouts remaining, who is on the floor, or who has the ball in their hands.</li>
+        <li>Overlap is thin at 0:42–0:45, where almost every team goes.</li>
+      </ul>
+    </div>
+    <div class="stack">
+      <div class="eyebrow">Next steps</div>
+      <ul class="plain">
+        <li>Run the same pipeline on 2022-23 through 2024-25 real play-by-play from nba_api.</li>
+        <li>Join lineup data to test whether the value depends on having a closer on the floor.</li>
+        <li>Extend to the “hold for the last shot” decision when the ball is gained at 0:24–0:30.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="stack prose">
+    <div class="eyebrow">Repository</div>
+    <h2>Run it yourself</h2>
+    <p>Every number on this page comes from a file in <code>output/tables</code>, and every console block from <code>output/logs</code>. The whole project rebuilds from one script with fixed seeds.</p>
+  </div>
+  <div class="two-col">
+    <div class="code">
+      <div class="code-head"><span>nba-2for1-analysis/</span><span class="lang">tree</span></div>
+      <pre class="console"><code>├── run_all.sh
+├── python/
+│   ├── 00_simulate_pbp.py
+│   ├── run_sql.py
+│   ├── 99_ground_truth.py
+│   └── build_report.py
+├── sql/
+│   ├── 01_stage.sql
+│   ├── 02_possessions.sql
+│   ├── 03_windows.sql
+│   └── 04_descriptives.sql
+├── R/
+│   ├── 01_effect_models.R
+│   ├── 02_when_it_works.R
+│   └── 03_team_value.R
+├── data/  raw/ + processed/
+├── output/ tables/ figures/ logs/
+└── report/the_2for1_ledger.html</code></pre>
+    </div>
+    <div class="code">
+      <div class="code-head"><span>terminal</span><span class="lang">bash</span></div>
+      <pre><code class="language-bash">pip install duckdb numpy pandas
+Rscript -e 'install.packages(c("readr","dplyr",
+  "tidyr","purrr","sandwich","lmtest",
+  "ggplot2","scales"))'
+
+bash run_all.sh
+# [1/6] Simulating play-by-play
+# [2/6] SQL pipeline (DuckDB)
+# [3/6] R: effect estimates
+# [4/6] R: timing + team ledger
+# [5/6] Ground-truth validation
+# [6/6] Building report</code></pre>
+    </div>
+  </div>
+</section>
+
+<footer>Viktor Bergs · Independent project, September 2026 · Simulated data for demonstration; teams are anonymized and no figure here describes a real NBA team.</footer>
+</div>
+
+<div id="tip" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+const DATA = {"estimates": [{"method": "Naive difference", "estimate": 0.2928, "ci_low": 0.2146, "ci_high": 0.3709}, {"method": "OLS + controls", "estimate": 0.2207, "ci_low": 0.1251, "ci_high": 0.3163}, {"method": "Inverse propensity weighting", "estimate": 0.1717, "ci_low": 0.0673, "ci_high": 0.2708}], "truth": {"all": {"true_effect": 0.2152, "se": 0.0081}, "byBucket": {"30-33": 0.0809, "33-36": 0.2127, "36-39": 0.2857, "39-42": 0.2444, "42-45": 0.2222}}, "buckets": [{"start_bucket": "30-33", "windows": 1575, "go_rate": 0.1346, "effect": -0.0897, "ci_low": -0.4, "ci_high": 0.2205, "p_value": 0.5708}, {"start_bucket": "33-36", "windows": 1970, "go_rate": 0.3777, "effect": 0.3054, "ci_low": 0.1235, "ci_high": 0.4874, "p_value": 0.001}, {"start_bucket": "36-39", "windows": 2004, "go_rate": 0.5778, "effect": 0.293, "ci_low": 0.1159, "ci_high": 0.4701, "p_value": 0.0012}, {"start_bucket": "39-42", "windows": 2089, "go_rate": 0.7836, "effect": 0.1878, "ci_low": -0.016, "ci_high": 0.3917, "p_value": 0.071}, {"start_bucket": "42-45", "windows": 1943, "go_rate": 0.9295, "effect": 0.0787, "ci_low": -0.2575, "ci_high": 0.4149, "p_value": 0.6465}], "timing": [{"bin": "0:28–0:31", "n": 1457, "net": 0.7, "counter": 0.117, "second": 0.852}, {"bin": "0:31–0:34", "n": 1457, "net": 0.743, "counter": 0.265, "second": 0.907}, {"bin": "0:34–0:37", "n": 894, "net": 0.527, "counter": 0.45, "second": 0.97}, {"bin": "0:37+", "n": 427, "net": 0.518, "counter": 0.674, "second": 0.998}], "teams": [{"team": "T28", "rank": 1, "go_rate": 0.847, "too_early_rate": 0.364, "pass": 3.44, "early": 3.96, "total": 7.4, "wins": 0.247}, {"team": "T26", "rank": 2, "go_rate": 0.804, "too_early_rate": 0.279, "pass": 4.56, "early": 2.89, "total": 7.44, "wins": 0.248}, {"team": "T24", "rank": 3, "go_rate": 0.806, "too_early_rate": 0.319, "pass": 4.47, "early": 3.42, "total": 7.89, "wins": 0.263}, {"team": "T11", "rank": 4, "go_rate": 0.756, "too_early_rate": 0.313, "pass": 5.25, "early": 3.09, "total": 8.33, "wins": 0.278}, {"team": "T04", "rank": 5, "go_rate": 0.807, "too_early_rate": 0.38, "pass": 4.47, "early": 4.23, "total": 8.7, "wins": 0.29}, {"team": "T05", "rank": 6, "go_rate": 0.753, "too_early_rate": 0.306, "pass": 5.59, "early": 3.22, "total": 8.81, "wins": 0.294}, {"team": "T25", "rank": 7, "go_rate": 0.717, "too_early_rate": 0.336, "pass": 6.02, "early": 2.95, "total": 8.97, "wins": 0.299}, {"team": "T17", "rank": 8, "go_rate": 0.658, "too_early_rate": 0.282, "pass": 6.88, "early": 2.35, "total": 9.23, "wins": 0.308}, {"team": "T20", "rank": 9, "go_rate": 0.653, "too_early_rate": 0.201, "pass": 7.74, "early": 1.95, "total": 9.68, "wins": 0.323}, {"team": "T19", "rank": 10, "go_rate": 0.72, "too_early_rate": 0.316, "pass": 6.45, "early": 3.29, "total": 9.74, "wins": 0.325}, {"team": "T30", "rank": 11, "go_rate": 0.705, "too_early_rate": 0.277, "pass": 7.05, "early": 2.95, "total": 10.0, "wins": 0.333}, {"team": "T18", "rank": 12, "go_rate": 0.724, "too_early_rate": 0.335, "pass": 6.71, "early": 3.56, "total": 10.26, "wins": 0.342}, {"team": "T22", "rank": 13, "go_rate": 0.625, "too_early_rate": 0.283, "pass": 8.0, "early": 2.28, "total": 10.28, "wins": 0.343}, {"team": "T02", "rank": 14, "go_rate": 0.743, "too_early_rate": 0.4, "pass": 6.19, "early": 4.16, "total": 10.35, "wins": 0.345}, {"team": "T12", "rank": 15, "go_rate": 0.717, "too_early_rate": 0.296, "pass": 7.14, "early": 3.22, "total": 10.36, "wins": 0.345}, {"team": "T15", "rank": 16, "go_rate": 0.725, "too_early_rate": 0.342, "pass": 6.88, "early": 3.69, "total": 10.57, "wins": 0.352}, {"team": "T14", "rank": 17, "go_rate": 0.632, "too_early_rate": 0.301, "pass": 8.17, "early": 2.75, "total": 10.92, "wins": 0.364}, {"team": "T07", "rank": 18, "go_rate": 0.608, "too_early_rate": 0.241, "pass": 8.86, "early": 2.21, "total": 11.07, "wins": 0.369}, {"team": "T21", "rank": 19, "go_rate": 0.643, "too_early_rate": 0.331, "pass": 8.25, "early": 3.02, "total": 11.27, "wins": 0.376}, {"team": "T10", "rank": 20, "go_rate": 0.661, "too_early_rate": 0.352, "pass": 8.0, "early": 3.42, "total": 11.42, "wins": 0.381}, {"team": "T23", "rank": 21, "go_rate": 0.598, "too_early_rate": 0.303, "pass": 8.94, "early": 2.48, "total": 11.43, "wins": 0.381}, {"team": "T06", "rank": 22, "go_rate": 0.668, "too_early_rate": 0.366, "pass": 7.74, "early": 3.76, "total": 11.5, "wins": 0.383}, {"team": "T09", "rank": 23, "go_rate": 0.593, "too_early_rate": 0.246, "pass": 9.46, "early": 2.21, "total": 11.67, "wins": 0.389}, {"team": "T16", "rank": 24, "go_rate": 0.655, "too_early_rate": 0.352, "pass": 8.25, "early": 3.42, "total": 11.68, "wins": 0.389}, {"team": "T08", "rank": 25, "go_rate": 0.62, "too_early_rate": 0.283, "pass": 9.11, "early": 2.62, "total": 11.73, "wins": 0.391}, {"team": "T13", "rank": 26, "go_rate": 0.595, "too_early_rate": 0.315, "pass": 9.2, "early": 2.68, "total": 11.88, "wins": 0.396}, {"team": "T27", "rank": 27, "go_rate": 0.559, "too_early_rate": 0.355, "pass": 9.89, "early": 2.89, "total": 12.77, "wins": 0.426}, {"team": "T01", "rank": 28, "go_rate": 0.504, "too_early_rate": 0.29, "pass": 11.18, "early": 2.08, "total": 13.26, "wins": 0.442}, {"team": "T29", "rank": 29, "go_rate": 0.5, "too_early_rate": 0.242, "pass": 11.95, "early": 2.01, "total": 13.97, "wins": 0.466}, {"team": "T03", "rank": 30, "go_rate": 0.415, "too_early_rate": 0.295, "pass": 12.98, "early": 1.88, "total": 14.86, "wins": 0.495}]};
+
+/* ---------------- helpers ---------------- */
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function txt(parent, x, y, s, cls, anchor) {
+  const t = el("text", { x, y, class: cls || "", "text-anchor": anchor || "start" }, parent);
+  t.textContent = s;
+  return t;
+}
+const sgn = (v, d = 2) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(d);
+const pct = (v) => Math.round(v * 100) + "%";
+const clockStr = (s) => { const m = Math.floor(s / 60); const r = s - 60 * m; return m + ":" + r.toFixed(1).padStart(4, "0"); };
+function roundRight(x, y, w, h, r) {
+  r = Math.min(r, w, h / 2);
+  return `M${x},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h - r}Q${x + w},${y + h} ${x + w - r},${y + h}H${x}Z`;
+}
+function roundTop(x, y, w, h, r) {
+  r = Math.min(r, w / 2, h);
+  return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
+}
+
+const tip = document.getElementById("tip");
+function moveTip(e) {
+  const pad = 14; const r = tip.getBoundingClientRect();
+  let x = e.clientX + pad, y = e.clientY + pad;
+  if (x + r.width > window.innerWidth - 8) x = e.clientX - r.width - pad;
+  if (y + r.height > window.innerHeight - 8) y = e.clientY - r.height - pad;
+  tip.style.left = Math.max(8, x) + "px"; tip.style.top = Math.max(8, y) + "px";
+}
+function bindTip(node, html) {
+  node.addEventListener("pointerenter", (e) => { tip.innerHTML = html; tip.hidden = false; moveTip(e); });
+  node.addEventListener("pointermove", moveTip);
+  node.addEventListener("pointerleave", () => { tip.hidden = true; });
+}
+const tipRows = (title, rows) => `<b>${title}</b>` + rows.map(([k, v]) => `<div class="row"><span>${k}</span><span>${v}</span></div>`).join("");
+
+function makeSvg(host, w, h) {
+  host.innerHTML = "";
+  return el("svg", { viewBox: `0 0 ${w} ${h}`, width: w, height: h, role: "img" }, host);
+}
+
+/* ---------------- hero: clock scrubber ---------------- */
+function bucketFor(t) {
+  if (t < 33) return "30-33"; if (t < 36) return "33-36"; if (t < 39) return "36-39"; if (t < 42) return "39-42"; return "42-45";
+}
+function drawTimeline(t) {
+  const host = document.getElementById("timeline");
+  const W = Math.max(300, host.clientWidth), H = 176;
+  const svg = makeSvg(host, W, H);
+  svg.setAttribute("aria-label", "Timeline of the final 45 seconds under both choices");
+  const L = 6, R = W - 10;
+  const x = (s) => L + (45 - s) / 45 * (R - L);
+  // shoot window band
+  el("rect", { x: x(34), y: 18, width: x(28) - x(34), height: 124, class: "f-orange-wash", rx: 3 }, svg);
+  txt(svg, (x(34) + x(28)) / 2, 12, "shoot 0:34–0:28", "t-muted", "middle");
+  // ticks
+  for (let s = 45; s >= 0; s -= 5) {
+    el("line", { x1: x(s), x2: x(s), y1: 146, y2: 151, class: "axis" }, svg);
+    if (W > 520 || s % 10 === 0 || s === 45) txt(svg, x(s), 166, "0:" + String(s).padStart(2, "0"), "t-muted", s === 45 ? "start" : s === 0 ? "end" : "middle");
+  }
+  el("line", { x1: L, x2: R, y1: 146, y2: 146, class: "axis" }, svg);
+
+  const lane = (y, label, segs, balls, note) => {
+    txt(svg, L, y - 7, label, "t-strong halo");
+    if (note) txt(svg, R, y - 7, note, "t-muted halo", "end");
+    segs.forEach(([a, b, cls]) => {
+      const x0 = x(a) + 1, w = Math.max(1, x(b) - x(a) - 2);
+      el("rect", { x: x0, y, width: w, height: 14, rx: 3, class: cls }, svg);
+    });
+    balls.forEach((s) => el("circle", { cx: x(s), cy: y + 7, r: 5, class: "ball" }, svg));
+  };
+  // gained marker
+  el("line", { x1: x(t), x2: x(t), y1: 26, y2: 142, class: "zero" }, svg);
+
+  // lane 1: go
+  if (t >= 31) {
+    const s1 = Math.max(28.5, Math.min(t - 3, 33));
+    const oEnd = s1 - 24;
+    const t2 = oEnd - 1;
+    lane(44, "Go 2-for-1", [[t, s1, "f-blue"], [s1 - 0.8, oEnd, "f-opp"], [t2, 0, "f-blue"]], [s1, oEnd, 1.0],
+         `you: 2 shots · them: 1`);
+  } else {
+    txt(svg, L, 37, "Go 2-for-1", "t-strong halo");
+    txt(svg, L, 58, "Not possible: no time to shoot by 0:28", "t-muted halo");
+  }
+  // lane 2: normal
+  const n1 = t - 14.5;
+  const oShot = (n1 - 1 > 24) ? n1 - 23 : 2.5;           // opponent holds for the last shot
+  const segs = [[t, n1, "f-blue"], [n1 - 0.8, oShot, "f-opp"], [oShot - 1, 0, "f-blue"]];
+  let balls, note;
+  if (oShot - 1 >= 3) {
+    balls = [n1, oShot, 0.8];
+    note = n1 >= 28 ? "normal pace already reaches 0:28" : "you: 2 shots · them: 1";
+  } else {
+    balls = [n1, oShot];
+    note = "you: 1 shot + heave · them: last shot";
+  }
+  lane(104, "Normal possession", segs, balls, W > 470 ? note : "");
+}
+function updateScrub() {
+  const t = parseFloat(document.getElementById("clockRange").value);
+  document.getElementById("clockDigits").textContent = clockStr(t);
+  const b = DATA.buckets.find((d) => d.start_bucket === bucketFor(t));
+  document.getElementById("stEffect").textContent = sgn(b.effect);
+  document.getElementById("stCI").textContent = `${sgn(b.ci_low)} to ${sgn(b.ci_high)}`;
+  document.getElementById("stGo").textContent = pct(b.go_rate);
+  document.getElementById("stUse").textContent = Math.max(0, t - 28).toFixed(1) + " s";
+  const chip = document.getElementById("verdictChip"), vt = document.getElementById("verdictText");
+  if (t < 31) {
+    chip.textContent = "Normal possession"; chip.className = "chip warn";
+    vt.textContent = "There isn't time to shoot by 0:28. Run your offense and make them take the last shot against a set defense.";
+  } else if (t < 33) {
+    chip.textContent = "Normal possession"; chip.className = "chip warn";
+    vt.textContent = `You'd have to shoot within ${(t - 28).toFixed(1)} seconds. That rushed shot costs about what the extra possession gains.`;
+  } else if (t < 37) {
+    chip.textContent = "Go 2-for-1"; chip.className = "chip";
+    vt.textContent = "Take the first clean look. The first shot comes early in the clock, and it's still the biggest measured gain.";
+  } else {
+    chip.textContent = "Go 2-for-1"; chip.className = "chip";
+    vt.textContent = "Go, but hold the first shot until 0:34. Shooting earlier lets the opponent run its own 2-for-1.";
+  }
+  drawTimeline(t);
+}
+
+/* ---------------- chart: estimators ---------------- */
+function drawEst() {
+  const host = document.getElementById("chartEst");
+  const W = Math.max(300, host.clientWidth), rowH = 58, top = 12, H = top + rowH * DATA.estimates.length + 30;
+  const svg = makeSvg(host, W, H);
+  svg.setAttribute("aria-label", "Dot plot of three estimates with confidence intervals and the true effect");
+  const L = 8, R = W - 64;
+  const lo = -0.05, hi = 0.45;
+  const x = (v) => L + (v - lo) / (hi - lo) * (R - L);
+  const yEnd = top + rowH * DATA.estimates.length;
+  [0, 0.1, 0.2, 0.3, 0.4].forEach((v) => {
+    el("line", { x1: x(v), x2: x(v), y1: top, y2: yEnd, class: v === 0 ? "zero" : "grid" }, svg);
+    txt(svg, x(v), yEnd + 20, (v === 0 ? "0" : "+" + v.toFixed(1)), "t-muted", "middle");
+  });
+  const T = DATA.truth.all;
+  el("rect", { x: x(T.true_effect - 1.96 * T.se), y: top, width: x(T.true_effect + 1.96 * T.se) - x(T.true_effect - 1.96 * T.se), height: yEnd - top, class: "band" }, svg);
+  el("line", { x1: x(T.true_effect), x2: x(T.true_effect), y1: top, y2: yEnd, class: "truth" }, svg);
+  DATA.estimates.forEach((d, i) => {
+    const y0 = top + i * rowH;
+    const g = el("g", { class: "row" }, svg);
+    el("rect", { x: 0, y: y0, width: W, height: rowH, class: "hl" }, g);
+    txt(g, L, y0 + 20, d.method, "t-strong halo");
+    const cy = y0 + 38;
+    el("line", { x1: x(d.ci_low), x2: x(d.ci_high), y1: cy, y2: cy, class: "ci" }, g);
+    el("circle", { cx: x(d.estimate), cy, r: 6, class: "dot" }, g);
+    txt(g, x(d.ci_high) + 8, cy + 4, sgn(d.estimate, 3), "t-strong halo");
+    bindTip(g, tipRows(d.method, [["Estimate", sgn(d.estimate, 3)], ["95% CI", `${sgn(d.ci_low, 3)} to ${sgn(d.ci_high, 3)}`], ["True effect", sgn(T.true_effect, 3)], ["Covers truth?", (d.ci_low <= T.true_effect && d.ci_high >= T.true_effect) ? "Yes" : "No"]]));
+  });
+}
+
+/* ---------------- chart: by start bucket ---------------- */
+function drawBucket() {
+  const host = document.getElementById("chartBucket");
+  const W = Math.max(300, host.clientWidth), H = 300;
+  const svg = makeSvg(host, W, H);
+  svg.setAttribute("aria-label", "Effect of going 2-for-1 by seconds left when the ball was gained");
+  const L = 40, R = W - 8, top = 10, bot = 232;
+  const lo = -0.45, hi = 0.55;
+  const y = (v) => bot - (v - lo) / (hi - lo) * (bot - top);
+  [-0.4, -0.2, 0, 0.2, 0.4].forEach((v) => {
+    el("line", { x1: L, x2: R, y1: y(v), y2: y(v), class: v === 0 ? "zero" : "grid" }, svg);
+    txt(svg, L - 8, y(v) + 4, v === 0 ? "0" : sgn(v, 1), "t-muted", "end");
+  });
+  const n = DATA.buckets.length, band = (R - L) / n;
+  if (band < 88) { txt(svg, L - 8, bot + 22, "sec", "t-muted", "end"); txt(svg, L - 8, bot + 42, "go", "t-muted", "end"); }
+  DATA.buckets.forEach((d, i) => {
+    const cx = L + band * (i + 0.5);
+    const g = el("g", { class: "row" }, svg);
+    el("rect", { x: L + band * i + 2, y: top, width: band - 4, height: bot - top, class: "hl", rx: 4 }, g);
+    el("line", { x1: cx, x2: cx, y1: y(d.ci_low), y2: y(d.ci_high), class: "ci" }, g);
+    const tr = DATA.truth.byBucket[d.start_bucket];
+    el("line", { x1: cx - 13, x2: cx + 13, y1: y(tr), y2: y(tr), class: "truth" }, g);
+    el("circle", { cx, cy: y(d.effect), r: 6, class: d.p_value < 0.05 ? "dot" : "dot hollow" }, g);
+    const lab = "0:" + d.start_bucket.replace("-", "–0:");
+    const narrow = band < 88;
+    txt(g, cx, bot + 22, narrow ? d.start_bucket.replace("-", "–") : lab, "t-display", "middle");
+    txt(g, cx, bot + 42, narrow ? pct(d.go_rate) : "go rate " + pct(d.go_rate), "t-muted", "middle");
+    if (!narrow) txt(g, cx, bot + 60, "n = " + d.windows.toLocaleString(), "t-muted", "middle");
+    bindTip(g, tipRows("Ball gained " + lab, [["Estimate", sgn(d.effect, 3)], ["95% CI", `${sgn(d.ci_low)} to ${sgn(d.ci_high)}`], ["True value", sgn(tr, 3)], ["Teams going", pct(d.go_rate)], ["Windows", d.windows.toLocaleString()]]));
+  });
+}
+
+/* ---------------- chart: shot timing ---------------- */
+function drawTiming() {
+  const host = document.getElementById("chartTiming");
+  const W = Math.max(300, host.clientWidth), H = 262;
+  const svg = makeSvg(host, W, H);
+  svg.setAttribute("aria-label", "Opponent counter rate by clock time of the first shot");
+  const L = 40, R = W - 8, top = 18, bot = 196;
+  const y = (v) => bot - v / 0.8 * (bot - top);
+  [0, 0.2, 0.4, 0.6, 0.8].forEach((v) => {
+    el("line", { x1: L, x2: R, y1: y(v), y2: y(v), class: v === 0 ? "zero" : "grid" }, svg);
+    txt(svg, L - 8, y(v) + 4, pct(v), "t-muted", "end");
+  });
+  const n = DATA.timing.length, band = (R - L) / n, bw = 24;
+  DATA.timing.forEach((d, i) => {
+    const cx = L + band * (i + 0.5);
+    const g = el("g", { class: "row" }, svg);
+    el("rect", { x: L + band * i + 2, y: top - 12, width: band - 4, height: bot - top + 12, class: "hl", rx: 4 }, g);
+    el("path", { d: roundTop(cx - bw / 2, y(d.counter), bw, bot - y(d.counter), 4), class: i >= 2 ? "f-orange" : "f-blue" }, g);
+    txt(g, cx, y(d.counter) - 7, pct(d.counter), "t-strong", "middle");
+    txt(g, cx, bot + 22, d.bin, "t-display", "middle");
+    txt(g, cx, bot + 42, "net " + sgn(d.net), "t-muted", "middle");
+    txt(g, cx, bot + 60, "n = " + d.n.toLocaleString(), "t-muted", "middle");
+    bindTip(g, tipRows("First shot " + d.bin, [["Opponent got 2 possessions", pct(d.counter)], ["Team got 2 possessions", pct(d.second)], ["Net points", sgn(d.net)], ["Attempts", d.n.toLocaleString()]]));
+  });
+}
+
+/* ---------------- chart: ledger ---------------- */
+function drawLedger() {
+  const host = document.getElementById("chartLedger");
+  const W = Math.max(300, host.clientWidth), rowH = 22, top = 8, n = DATA.teams.length;
+  const H = top + rowH * n + 30;
+  const svg = makeSvg(host, W, H);
+  svg.setAttribute("aria-label", "Stacked bars of points left on the table per season for 30 teams");
+  const L = 42, R = W - 40, max = 16;
+  const x = (v) => L + v / max * (R - L);
+  const yEnd = top + rowH * n;
+  [0, 4, 8, 12, 16].forEach((v) => {
+    el("line", { x1: x(v), x2: x(v), y1: top, y2: yEnd, class: v === 0 ? "axis" : "grid" }, svg);
+    txt(svg, x(v), yEnd + 20, String(v), "t-muted", "middle");
+  });
+  DATA.teams.forEach((d, i) => {
+    const y0 = top + i * rowH, bh = 14, by = y0 + (rowH - bh) / 2;
+    const g = el("g", { class: "row" }, svg);
+    el("rect", { x: 0, y: y0, width: W, height: rowH, class: "hl" }, g);
+    txt(g, L - 8, by + 11, d.team, "t-strong", "end");
+    const wPass = x(d.pass) - x(0);
+    el("rect", { x: x(0), y: by, width: Math.max(0, wPass - 1), height: bh, class: "f-blue" }, g);
+    el("path", { d: roundRight(x(d.pass) + 1, by, x(d.pass + d.early) - x(d.pass) - 1, bh, 4), class: "f-orange" }, g);
+    txt(g, x(d.total) + 6, by + 11, d.total.toFixed(1), "t-strong");
+    bindTip(g, tipRows(d.team + " · rank " + d.rank + " of 30", [["Go rate (0:33+)", pct(d.go_rate)], ["Too-early rate", pct(d.too_early_rate)], ["Passed on a 2-for-1", d.pass.toFixed(1) + " pts"], ["Shot too early", d.early.toFixed(1) + " pts"], ["Total per season", d.total.toFixed(1) + " pts"], ["In wins", d.wins.toFixed(2)]]));
+  });
+}
+
+/* ---------------- boot ---------------- */
+function drawAll() { updateScrub(); drawEst(); drawBucket(); drawTiming(); drawLedger(); }
+document.getElementById("clockRange").addEventListener("input", updateScrub);
+let rz; new ResizeObserver(() => { clearTimeout(rz); rz = setTimeout(drawAll, 60); }).observe(document.querySelector(".wrap"));
+drawAll();
+try { if (window.hljs) document.querySelectorAll("pre code[class^='language-']").forEach((b) => hljs.highlightElement(b)); } catch (e) {}
+</script>
